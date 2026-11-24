@@ -106,6 +106,7 @@ class LocalA11y_DB {
 	public static function create_scan( $data ) {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$inserted = $wpdb->insert(
 			self::scans_table(),
 			array(
@@ -157,6 +158,7 @@ class LocalA11y_DB {
 				$impact = 'moderate';
 			}
 
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$wpdb->insert(
 				self::findings_table(),
 				array(
@@ -188,15 +190,15 @@ class LocalA11y_DB {
 			}
 		}
 
-		$scans_table = self::scans_table();
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$scans_table}
+				'UPDATE %i
 				 SET scanned_pages = scanned_pages + 1,
 				     violations_count = violations_count + %d,
 				     incomplete_count = incomplete_count + %d
-				 WHERE id = %d",
+				 WHERE id = %d',
+				self::scans_table(),
 				$violations_added,
 				$incomplete_added,
 				$scan_id
@@ -223,6 +225,7 @@ class LocalA11y_DB {
 			$status = 'completed';
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$updated = $wpdb->update(
 			self::scans_table(),
 			array(
@@ -245,13 +248,13 @@ class LocalA11y_DB {
 	 */
 	public static function get_scans( $limit = 15 ) {
 		global $wpdb;
-		$scans_table = self::scans_table();
-		$limit       = max( 1, min( 100, absint( $limit ) ) );
+		$limit = max( 1, min( 100, absint( $limit ) ) );
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$scans_table} ORDER BY id DESC LIMIT %d",
+				'SELECT * FROM %i ORDER BY id DESC LIMIT %d',
+				self::scans_table(),
 				$limit
 			),
 			ARRAY_A
@@ -267,12 +270,13 @@ class LocalA11y_DB {
 	 */
 	public static function get_summary() {
 		global $wpdb;
-		$scans_table    = self::scans_table();
-		$findings_table = self::findings_table();
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$latest_scan = $wpdb->get_row(
-			"SELECT * FROM {$scans_table} ORDER BY id DESC LIMIT 1",
+			$wpdb->prepare(
+				'SELECT * FROM %i ORDER BY id DESC LIMIT 1',
+				self::scans_table()
+			),
 			ARRAY_A
 		);
 
@@ -288,9 +292,10 @@ class LocalA11y_DB {
 			$grouped = $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT impact, COUNT(*) AS cnt
-					 FROM {$findings_table}
+					 FROM %i
 					 WHERE scan_id = %d AND finding_type = 'violation' AND status = 'open'
 					 GROUP BY impact",
+					self::findings_table(),
 					absint( $latest_scan['id'] )
 				),
 				ARRAY_A
@@ -319,54 +324,45 @@ class LocalA11y_DB {
 	 */
 	public static function get_findings( $args = array() ) {
 		global $wpdb;
-		$findings_table = self::findings_table();
 
-		$where  = array( '1=1' );
-		$values = array();
+		$scan_id      = ! empty( $args['scan_id'] ) ? absint( $args['scan_id'] ) : 0;
+		$impact       = ( ! empty( $args['impact'] ) && in_array( $args['impact'], array( 'critical', 'serious', 'moderate', 'minor' ), true ) ) ? $args['impact'] : '';
+		$finding_type = ( ! empty( $args['finding_type'] ) && in_array( $args['finding_type'], array( 'violation', 'incomplete' ), true ) ) ? $args['finding_type'] : '';
+		$status       = ( ! empty( $args['status'] ) && in_array( $args['status'], array( 'open', 'reviewed', 'fixed' ), true ) ) ? $args['status'] : '';
+		$search       = ! empty( $args['search'] ) ? '%' . $wpdb->esc_like( sanitize_text_field( $args['search'] ) ) . '%' : '';
+		$limit        = isset( $args['limit'] ) ? max( 1, min( 500, absint( $args['limit'] ) ) ) : 100;
+		$offset       = isset( $args['offset'] ) ? absint( $args['offset'] ) : 0;
 
-		if ( ! empty( $args['scan_id'] ) ) {
-			$where[]  = 'scan_id = %d';
-			$values[] = absint( $args['scan_id'] );
-		}
-
-		if ( ! empty( $args['impact'] ) && in_array( $args['impact'], array( 'critical', 'serious', 'moderate', 'minor' ), true ) ) {
-			$where[]  = 'impact = %s';
-			$values[] = $args['impact'];
-		}
-
-		if ( ! empty( $args['finding_type'] ) && in_array( $args['finding_type'], array( 'violation', 'incomplete' ), true ) ) {
-			$where[]  = 'finding_type = %s';
-			$values[] = $args['finding_type'];
-		}
-
-		if ( ! empty( $args['status'] ) && in_array( $args['status'], array( 'open', 'reviewed', 'fixed' ), true ) ) {
-			$where[]  = 'status = %s';
-			$values[] = $args['status'];
-		}
-
-		if ( ! empty( $args['search'] ) ) {
-			$like     = '%' . $wpdb->esc_like( sanitize_text_field( $args['search'] ) ) . '%';
-			$where[]  = '(page_title LIKE %s OR rule_id LIKE %s OR help_text LIKE %s OR selector LIKE %s)';
-			$values[] = $like;
-			$values[] = $like;
-			$values[] = $like;
-			$values[] = $like;
-		}
-
-		$limit  = isset( $args['limit'] ) ? max( 1, min( 500, absint( $args['limit'] ) ) ) : 100;
-		$offset = isset( $args['offset'] ) ? absint( $args['offset'] ) : 0;
-
-		$where_sql = implode( ' AND ', $where );
-		$sql       = "SELECT * FROM {$findings_table}
-			WHERE {$where_sql}
-			ORDER BY FIELD(impact, 'critical', 'serious', 'moderate', 'minor'), id DESC
-			LIMIT %d OFFSET %d";
-
-		$values[] = $limit;
-		$values[] = $offset;
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
-		$rows = $wpdb->get_results( $wpdb->prepare( $sql, $values ), ARRAY_A );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM %i
+				 WHERE (%d = 0 OR scan_id = %d)
+				   AND (%s = '' OR impact = %s)
+				   AND (%s = '' OR finding_type = %s)
+				   AND (%s = '' OR status = %s)
+				   AND (%s = '' OR page_title LIKE %s OR rule_id LIKE %s OR help_text LIKE %s OR selector LIKE %s)
+				 ORDER BY FIELD(impact, 'critical', 'serious', 'moderate', 'minor'), id DESC
+				 LIMIT %d OFFSET %d",
+				self::findings_table(),
+				$scan_id,
+				$scan_id,
+				$impact,
+				$impact,
+				$finding_type,
+				$finding_type,
+				$status,
+				$status,
+				$search,
+				$search,
+				$search,
+				$search,
+				$search,
+				$limit,
+				$offset
+			),
+			ARRAY_A
+		);
 
 		return is_array( $rows ) ? $rows : array();
 	}
@@ -386,6 +382,7 @@ class LocalA11y_DB {
 			return false;
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$updated = $wpdb->update(
 			self::findings_table(),
 			array(
@@ -408,11 +405,15 @@ class LocalA11y_DB {
 	 */
 	public static function get_top_open_limitations( $limit = 8 ) {
 		global $wpdb;
-		$scans_table    = self::scans_table();
-		$findings_table = self::findings_table();
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$latest_id = (int) $wpdb->get_var( "SELECT id FROM {$scans_table} ORDER BY id DESC LIMIT 1" );
+		$latest_id = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				'SELECT id FROM %i ORDER BY id DESC LIMIT 1',
+				self::scans_table()
+			)
+		);
+
 		if ( ! $latest_id ) {
 			return array();
 		}
@@ -421,11 +422,12 @@ class LocalA11y_DB {
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT rule_id, impact, help_text, COUNT(*) AS occurrences
-				 FROM {$findings_table}
+				 FROM %i
 				 WHERE scan_id = %d AND finding_type = 'violation' AND status = 'open'
 				 GROUP BY rule_id, impact, help_text
 				 ORDER BY FIELD(impact, 'critical', 'serious', 'moderate', 'minor'), occurrences DESC
 				 LIMIT %d",
+				self::findings_table(),
 				$latest_id,
 				absint( $limit )
 			),
@@ -442,12 +444,10 @@ class LocalA11y_DB {
 	 */
 	public static function clear_all() {
 		global $wpdb;
-		$findings_table = self::findings_table();
-		$scans_table    = self::scans_table();
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->query( "TRUNCATE TABLE {$findings_table}" );
+		$wpdb->query( $wpdb->prepare( 'TRUNCATE TABLE %i', self::findings_table() ) );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->query( "TRUNCATE TABLE {$scans_table}" );
+		$wpdb->query( $wpdb->prepare( 'TRUNCATE TABLE %i', self::scans_table() ) );
 	}
 }

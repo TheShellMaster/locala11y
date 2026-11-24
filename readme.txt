@@ -1,4 +1,4 @@
-=== LocalA11y — Local WCAG 2.2 & EAA Accessibility Audit ===
+=== LocalA11y — Local Accessibility & EAA Audit ===
 Contributors: theshellmaster
 Tags: accessibility, wcag, eaa, accessibility-audit, accessibility-statement
 Requires at least: 6.2
@@ -8,7 +8,7 @@ Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Run 100% local WCAG 2.2 & EAA accessibility audits with bundled axe-core, track manual checks, and generate an EAA Accessibility Statement. No overlays.
+100% local accessibility and EAA audits in WordPress with bundled axe-core, manual checklist, and EAA Statement generator. No SaaS, no overlays.
 
 == Description ==
 

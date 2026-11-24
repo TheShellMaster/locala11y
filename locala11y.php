@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name:       LocalA11y — Local WCAG 2.2 & EAA Accessibility Audit
+ * Plugin Name:       LocalA11y — Local Accessibility & EAA Audit
  * Plugin URI:        https://github.com/TheShellMaster/locala11y
- * Description:       Run honest, 100% local WCAG 2.2 & European Accessibility Act (EAA) audits inside WordPress using bundled axe-core, track manual checks, and generate an EAA Accessibility Statement. No external SaaS, no overlays.
+ * Description:       Run honest, 100% local accessibility and European Accessibility Act (EAA) audits inside WordPress using bundled axe-core, track manual checks, and generate an EAA Statement. No external SaaS, no overlays.
  * Version:           1.0.0
  * Requires at least: 6.2
  * Requires PHP:      7.4
@@ -11,7 +11,6 @@
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       locala11y
- * Domain Path:       /languages
  *
  * @package LocalA11y
  */

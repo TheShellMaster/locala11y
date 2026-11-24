@@ -17,9 +17,9 @@ $locala11y_scans_table    = $wpdb->prefix . 'locala11y_scans';
 $locala11y_findings_table = $wpdb->prefix . 'locala11y_findings';
 
 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
-$wpdb->query( "DROP TABLE IF EXISTS `{$locala11y_findings_table}`" );
+$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $locala11y_findings_table ) );
 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
-$wpdb->query( "DROP TABLE IF EXISTS `{$locala11y_scans_table}`" );
+$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $locala11y_scans_table ) );
 
 delete_option( 'locala11y_db_version' );
 delete_option( 'locala11y_settings' );

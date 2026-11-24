@@ -31,8 +31,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Build clean distribution directory
+        run: |
+          mkdir -p /tmp/locala11y-dist
+          rsync -av --exclude-from='.distignore' ./ /tmp/locala11y-dist/
+
       - name: Run WordPress Plugin Check
         uses: WordPress/plugin-check-action@v1
         with:
+          build-dir: /tmp/locala11y-dist
           slug: locala11y
-          strict-errors: true
+          strict: true

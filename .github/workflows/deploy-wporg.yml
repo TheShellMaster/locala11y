@@ -13,17 +13,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run WordPress Plugin Check
-        uses: WordPress/plugin-check-action@v1
-        with:
-          slug: locala11y
-          strict-errors: true
-
-      - name: Build clean WordPress.org ZIP
+      - name: Build clean distribution directory
         run: |
           mkdir -p /tmp/build/locala11y
           rsync -av --exclude-from='.distignore' ./ /tmp/build/locala11y/
-          cd /tmp/build && zip -r "${GITHUB_WORKSPACE}/locala11y.zip" locala11y
+
+      - name: Run WordPress Plugin Check
+        uses: WordPress/plugin-check-action@v1
+        with:
+          build-dir: /tmp/build/locala11y
+          slug: locala11y
+          strict: true
+
+      - name: Package WordPress.org ZIP
+        run: cd /tmp/build && zip -r "${GITHUB_WORKSPACE}/locala11y.zip" locala11y
 
       - name: Upload ZIP artifact
         uses: actions/upload-artifact@v4
