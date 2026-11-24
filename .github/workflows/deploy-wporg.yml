@@ -1,0 +1,48 @@
+name: Build Release ZIP & Deploy to WordPress.org
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  check-and-build:
+    name: Verify & Package Release ZIP
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run WordPress Plugin Check
+        uses: WordPress/plugin-check-action@v1
+        with:
+          slug: locala11y
+          strict-errors: true
+
+      - name: Build clean WordPress.org ZIP
+        run: |
+          mkdir -p /tmp/build/locala11y
+          rsync -av --exclude-from='.distignore' ./ /tmp/build/locala11y/
+          cd /tmp/build && zip -r "${GITHUB_WORKSPACE}/locala11y.zip" locala11y
+
+      - name: Upload ZIP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: locala11y-wordpress-org-zip
+          path: locala11y.zip
+
+  deploy-wporg:
+    name: Deploy to WordPress.org SVN
+    needs: check-and-build
+    runs-on: ubuntu-latest
+    if: vars.WPORG_DEPLOY_ENABLED == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to WordPress.org
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          SLUG: locala11y
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}

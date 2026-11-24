@@ -1,0 +1,242 @@
+.locala11y-wrap {
+	max-width: 1220px;
+}
+
+.locala11y-subtitle {
+	font-size: 14px;
+	color: #3c434a;
+	margin-top: 4px;
+}
+
+.locala11y-honest-box {
+	background: #f0f6fc;
+	border-left: 4px solid #2271b1;
+	padding: 12px 16px;
+	margin: 16px 0;
+	border-radius: 0 4px 4px 0;
+	color: #1d2327;
+}
+
+.locala11y-kpis {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: 14px;
+	margin: 18px 0;
+}
+
+.locala11y-kpi {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-top-width: 4px;
+	border-radius: 6px;
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+}
+
+.locala11y-kpi--critical { border-top-color: #b32d2e; }
+.locala11y-kpi--serious  { border-top-color: #d63638; }
+.locala11y-kpi--moderate { border-top-color: #996800; }
+.locala11y-kpi--minor    { border-top-color: #2271b1; }
+
+.locala11y-kpi__value {
+	font-size: 28px;
+	font-weight: 700;
+	line-height: 1.2;
+	color: #1d2327;
+}
+
+.locala11y-kpi__label {
+	font-size: 13px;
+	color: #50575e;
+	margin-top: 4px;
+}
+
+.locala11y-card {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	padding: 20px;
+	margin: 18px 0;
+}
+
+.locala11y-card-head {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.locala11y-controls {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 16px;
+	margin: 14px 0;
+}
+
+.locala11y-controls label {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	font-weight: 600;
+}
+
+.locala11y-control-buttons {
+	display: flex;
+	gap: 8px;
+}
+
+.locala11y-progress-wrap {
+	margin: 14px 0;
+}
+
+.locala11y-progress-bar {
+	width: 100%;
+	height: 12px;
+	background: #e2e4e7;
+	border-radius: 999px;
+	overflow: hidden;
+}
+
+.locala11y-progress-fill {
+	height: 100%;
+	background: #2271b1;
+	transition: width 0.2s ease;
+}
+
+.locala11y-targets-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 8px 0;
+	border-bottom: 1px solid #e2e4e7;
+}
+
+.locala11y-targets-list {
+	max-height: 260px;
+	overflow-y: auto;
+	padding: 8px 0;
+}
+
+.locala11y-target-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 4px;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.locala11y-target-url {
+	color: #50575e;
+	font-size: 12px;
+	word-break: break-all;
+}
+
+.locala11y-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 14px 0;
+}
+
+.locala11y-badge {
+	display: inline-block;
+	padding: 3px 8px;
+	border-radius: 4px;
+	font-weight: 600;
+	font-size: 12px;
+	color: #fff;
+}
+
+.locala11y-badge--critical { background: #8a1c1c; }
+.locala11y-badge--serious  { background: #b32d2e; }
+.locala11y-badge--moderate { background: #7a5200; }
+.locala11y-badge--minor    { background: #1d5d90; }
+
+.locala11y-subtag {
+	font-size: 11px;
+	color: #50575e;
+	margin-top: 4px;
+}
+
+.locala11y-meta {
+	font-size: 12px;
+	color: #50575e;
+	margin-top: 4px;
+}
+
+.locala11y-summary {
+	margin: 6px 0;
+	font-size: 12px;
+	color: #2c3338;
+}
+
+.locala11y-code {
+	display: inline-block;
+	max-width: 280px;
+	word-break: break-all;
+}
+
+.locala11y-snippet {
+	max-width: 300px;
+	max-height: 90px;
+	overflow: auto;
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	padding: 6px;
+	font-size: 11px;
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.locala11y-grid-2 {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+	gap: 18px;
+}
+
+.locala11y-preview {
+	background: #f9fafb;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	padding: 16px;
+}
+
+.locala11y-checklist {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.locala11y-checklist__item {
+	padding: 12px 0;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.locala11y-checklist__item label {
+	display: flex;
+	gap: 10px;
+	align-items: flex-start;
+}
+
+.locala11y-wcag-pill {
+	display: inline-block;
+	margin-left: 6px;
+	padding: 2px 6px;
+	font-size: 11px;
+	background: #f0f6fc;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	color: #1d2327;
+}
+
+@media print {
+	#adminmenumain, #wpadminbar, .locala11y-filters, .button, .locala11y-status-select {
+		display: none !important;
+	}
+	#wpcontent {
+		margin-left: 0 !important;
+	}
+}
