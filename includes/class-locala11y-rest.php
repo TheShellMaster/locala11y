@@ -120,9 +120,10 @@ class LocalA11y_REST {
 	 * @return WP_REST_Response
 	 */
 	public static function get_targets( WP_REST_Request $request ) {
-		$post_types  = LocalA11y_Pro_Gate::get_allowed_post_types();
-		$batch_limit = LocalA11y_Pro_Gate::get_batch_limit();
-		$limit       = $batch_limit > 0 ? $batch_limit : 200;
+		$public_types = get_post_types( array( 'public' => true ), 'names' );
+		unset( $public_types['attachment'] );
+		$post_types  = (array) apply_filters( 'locala11y_scan_post_types', array_values( $public_types ) );
+		$batch_limit = max( 1, absint( apply_filters( 'locala11y_max_batch_urls', 100 ) ) );
 
 		$targets = array(
 			array(
@@ -139,7 +140,7 @@ class LocalA11y_REST {
 			array(
 				'post_type'      => $post_types,
 				'post_status'    => 'publish',
-				'posts_per_page' => $limit,
+				'posts_per_page' => $batch_limit,
 				'orderby'        => 'modified',
 				'order'          => 'DESC',
 				'no_found_rows'  => true,
@@ -157,7 +158,7 @@ class LocalA11y_REST {
 				'url'     => $permalink,
 				'type'    => $post->post_type,
 			);
-			if ( $batch_limit > 0 && count( $targets ) >= $batch_limit ) {
+			if ( count( $targets ) >= $batch_limit ) {
 				break;
 			}
 		}
@@ -166,7 +167,6 @@ class LocalA11y_REST {
 			array(
 				'targets'     => $targets,
 				'batch_limit' => $batch_limit,
-				'is_pro'      => LocalA11y_Pro_Gate::is_pro(),
 			)
 		);
 	}
@@ -205,8 +205,8 @@ class LocalA11y_REST {
 			$viewport = 'desktop';
 		}
 
-		$batch_limit = LocalA11y_Pro_Gate::get_batch_limit();
-		if ( $batch_limit > 0 && $total_pages > $batch_limit ) {
+		$batch_limit = max( 1, absint( apply_filters( 'locala11y_max_batch_urls', 100 ) ) );
+		if ( $total_pages > $batch_limit ) {
 			$total_pages = $batch_limit;
 		}
 

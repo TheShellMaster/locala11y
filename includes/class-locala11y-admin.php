@@ -136,7 +136,7 @@ class LocalA11y_Admin {
 				'nonce'      => wp_create_nonce( 'wp_rest' ),
 				'axeUrl'     => esc_url_raw( LOCALA11Y_PLUGIN_URL . 'assets/vendor/axe-core/axe.min.js' ),
 				'siteOrigin' => esc_url_raw( $site_origin ),
-				'batchLimit' => LocalA11y_Pro_Gate::get_batch_limit(),
+				'batchLimit' => max( 1, absint( apply_filters( 'locala11y_max_batch_urls', 100 ) ) ),
 				'i18n'       => array(
 					'loadingTargets'   => __( 'Loading published pages…', 'locala11y' ),
 					'noTargetsFound'   => __( 'No published pages found.', 'locala11y' ),
@@ -149,7 +149,7 @@ class LocalA11y_Admin {
 					'pagesCount'       => __( 'page(s)', 'locala11y' ),
 					'invalidCustomUrl' => __( 'Enter a valid URL on this same site.', 'locala11y' ),
 					'duplicateUrl'     => __( 'This URL is already in the target list.', 'locala11y' ),
-					'limitReached'     => __( 'Free batch limit reached.', 'locala11y' ),
+					'limitReached'     => __( 'Maximum batch size reached (100 URLs per browser run for stability).', 'locala11y' ),
 					'copied'           => __( 'Copied!', 'locala11y' ),
 					'copySelector'     => __( 'Copy selector', 'locala11y' ),
 					'skippedNotice'    => __( 'Some pages could not be scanned in the background iframe (often due to X-Frame-Options or CSP headers). Open them directly and click "Audit A11y" in the admin bar:', 'locala11y' ),
@@ -252,7 +252,7 @@ class LocalA11y_Admin {
 		$latest_scan = $summary['latest_scan'];
 		$counts      = $summary['open_counts'];
 		$scans       = LocalA11y_DB::get_scans( 10 );
-		$batch_limit = LocalA11y_Pro_Gate::get_batch_limit();
+		$batch_limit = max( 1, absint( apply_filters( 'locala11y_max_batch_urls', 100 ) ) );
 		?>
 		<div class="wrap locala11y-wrap">
 			<h1><?php esc_html_e( 'LocalA11y — Local WCAG 2.2 & EAA Accessibility Audit', 'locala11y' ); ?></h1>
@@ -262,7 +262,7 @@ class LocalA11y_Admin {
 
 			<div class="locala11y-honest-box" role="note">
 				<strong><?php esc_html_e( 'Honest compliance note:', 'locala11y' ); ?></strong>
-				<?php esc_html_e( 'No automated plugin can legally certify WCAG or European Accessibility Act (EAA) compliance on its own. Automated checks catch roughly 30–50% of barriers; combine this scanner with the built-in Manual Checklist and fix issues directly in your theme or content.', 'locala11y' ); ?>
+				<?php esc_html_e( 'No plugin can provide or guarantee 100% legal compliance with WCAG, the European Accessibility Act (EAA), RGAA, or the ADA. Automated checks catch roughly 30–50% of barriers; combine this scanner with the built-in Manual Checklist and fix issues directly in your theme or content.', 'locala11y' ); ?>
 			</div>
 
 			<div class="locala11y-kpis">
@@ -288,15 +288,11 @@ class LocalA11y_Admin {
 				<h2><?php esc_html_e( 'Run a Local Accessibility Audit', 'locala11y' ); ?></h2>
 				<p>
 					<?php
-					if ( $batch_limit > 0 ) {
-						printf(
-							/* translators: %d: free batch limit */
-							esc_html__( 'Select published pages/posts below (up to %d per batch in Free). Keep this tab open while your browser scans each page locally.', 'locala11y' ),
-							absint( $batch_limit )
-						);
-					} else {
-						esc_html_e( 'Select published content below. Keep this tab open while your browser scans each page locally.', 'locala11y' );
-					}
+					printf(
+						/* translators: %d: maximum URLs per browser batch */
+						esc_html__( 'Select published content below (up to %d URLs per browser run). Keep this tab open while your browser audits each page locally.', 'locala11y' ),
+						absint( $batch_limit )
+					);
 					?>
 				</p>
 
@@ -609,8 +605,13 @@ class LocalA11y_Admin {
 		<div class="wrap locala11y-wrap">
 			<h1><?php esc_html_e( 'EAA / WCAG 2.2 Accessibility Statement Generator', 'locala11y' ); ?></h1>
 			<p class="locala11y-subtitle">
-				<?php esc_html_e( 'Generate a clear, transparent Accessibility Statement aligned with the European Accessibility Act (EU Directive 2019/882) and WCAG 2.2 Level AA. Embed anywhere using shortcode [locala11y_statement].', 'locala11y' ); ?>
+				<?php esc_html_e( 'Assist your site with a clear, transparent Accessibility Statement template aligned with the European Accessibility Act (EU Directive 2019/882) and WCAG 2.2 Level AA. Embed anywhere using shortcode [locala11y_statement].', 'locala11y' ); ?>
 			</p>
+
+			<div class="locala11y-honest-box" role="note">
+				<strong><?php esc_html_e( 'Legal notice:', 'locala11y' ); ?></strong>
+				<?php esc_html_e( 'No plugin can provide or guarantee 100% legal compliance. This generator provides a self-assessment template to assist your team and does not constitute legal advice. Website operators remain responsible for verifying applicable national EAA, RGAA, or ADA requirements.', 'locala11y' ); ?>
+			</div>
 
 			<?php
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
