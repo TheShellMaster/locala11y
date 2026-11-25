@@ -112,20 +112,21 @@ class LocalA11y_Admin {
 		);
 
 		wp_enqueue_script(
-			'locala11y-axe-core',
-			LOCALA11Y_PLUGIN_URL . 'assets/vendor/axe-core/axe.min.js',
-			array(),
-			'4.10.3',
-			true
-		);
-
-		wp_enqueue_script(
 			'locala11y-admin-scanner',
 			LOCALA11Y_PLUGIN_URL . 'assets/js/admin-scanner.js',
-			array( 'locala11y-axe-core' ),
+			array(),
 			LOCALA11Y_VERSION,
 			true
 		);
+
+		$parsed_home = wp_parse_url( home_url() );
+		$site_origin = '';
+		if ( ! empty( $parsed_home['scheme'] ) && ! empty( $parsed_home['host'] ) ) {
+			$site_origin = $parsed_home['scheme'] . '://' . $parsed_home['host'];
+			if ( ! empty( $parsed_home['port'] ) ) {
+				$site_origin .= ':' . (int) $parsed_home['port'];
+			}
+		}
 
 		wp_localize_script(
 			'locala11y-admin-scanner',
@@ -134,15 +135,25 @@ class LocalA11y_Admin {
 				'restUrl'    => esc_url_raw( rest_url( 'locala11y/v1' ) ),
 				'nonce'      => wp_create_nonce( 'wp_rest' ),
 				'axeUrl'     => esc_url_raw( LOCALA11Y_PLUGIN_URL . 'assets/vendor/axe-core/axe.min.js' ),
+				'siteOrigin' => esc_url_raw( $site_origin ),
 				'batchLimit' => LocalA11y_Pro_Gate::get_batch_limit(),
 				'i18n'       => array(
-					'loadingTargets' => __( 'Loading published pages…', 'locala11y' ),
-					'noTargets'      => __( 'Select at least one page to scan.', 'locala11y' ),
-					'scanning'       => __( 'Scanning', 'locala11y' ),
-					'completed'      => __( 'Scan completed.', 'locala11y' ),
-					'cancelled'      => __( 'Scan cancelled.', 'locala11y' ),
-					'frameError'     => __( 'Could not access page iframe (check X-Frame-Options / security headers).', 'locala11y' ),
-					'saved'          => __( 'Status updated.', 'locala11y' ),
+					'loadingTargets'   => __( 'Loading published pages…', 'locala11y' ),
+					'noTargetsFound'   => __( 'No published pages found.', 'locala11y' ),
+					'noTargets'        => __( 'Select at least one page to scan.', 'locala11y' ),
+					'scanning'         => __( 'Scanning', 'locala11y' ),
+					'completed'        => __( 'Scan completed.', 'locala11y' ),
+					'cancelled'        => __( 'Scan cancelled.', 'locala11y' ),
+					'frameError'       => __( 'Could not access page iframe (check X-Frame-Options / security headers).', 'locala11y' ),
+					'saved'            => __( 'Status updated.', 'locala11y' ),
+					'pagesCount'       => __( 'page(s)', 'locala11y' ),
+					'invalidCustomUrl' => __( 'Enter a valid URL on this same site.', 'locala11y' ),
+					'duplicateUrl'     => __( 'This URL is already in the target list.', 'locala11y' ),
+					'limitReached'     => __( 'Free batch limit reached.', 'locala11y' ),
+					'copied'           => __( 'Copied!', 'locala11y' ),
+					'copySelector'     => __( 'Copy selector', 'locala11y' ),
+					'skippedNotice'    => __( 'Some pages could not be scanned in the background iframe (often due to X-Frame-Options or CSP headers). Open them directly and click "Audit A11y" in the admin bar:', 'locala11y' ),
+					'reloadResults'    => __( 'Refresh page to view saved results', 'locala11y' ),
 				),
 			)
 		);
@@ -193,7 +204,7 @@ class LocalA11y_Admin {
 			'locala11y-axe-core',
 			LOCALA11Y_PLUGIN_URL . 'assets/vendor/axe-core/axe.min.js',
 			array(),
-			'4.10.3',
+			LOCALA11Y_AXE_VERSION,
 			true
 		);
 
@@ -211,15 +222,17 @@ class LocalA11y_Admin {
 			array(
 				'dashboardUrl' => esc_url_raw( admin_url( 'admin.php?page=locala11y' ) ),
 				'i18n'         => array(
-					'title'        => __( 'LocalA11y — Page Audit (WCAG 2.2 AA)', 'locala11y' ),
-					'running'      => __( 'Running local axe-core audit…', 'locala11y' ),
-					'noIssues'     => __( 'No automated WCAG 2.2 AA violations detected on this page. Remember to also complete manual keyboard and screen-reader checks.', 'locala11y' ),
-					'violations'   => __( 'Violations', 'locala11y' ),
-					'needsReview'  => __( 'Needs Manual Review', 'locala11y' ),
-					'highlight'    => __( 'Highlight element', 'locala11y' ),
-					'close'        => __( 'Close', 'locala11y' ),
-					'rerun'        => __( 'Re-run', 'locala11y' ),
-					'honestNotice' => __( 'Automated checks detect ~30–50% of WCAG criteria. Always pair with manual testing.', 'locala11y' ),
+					'title'             => __( 'LocalA11y — Page Audit (WCAG 2.2 AA)', 'locala11y' ),
+					'running'           => __( 'Running local axe-core audit…', 'locala11y' ),
+					'noIssues'          => __( 'No automated WCAG 2.2 AA violations detected on this page. Remember to also complete manual keyboard and screen-reader checks.', 'locala11y' ),
+					'violations'        => __( 'Violations', 'locala11y' ),
+					'needsReview'       => __( 'Needs Manual Review', 'locala11y' ),
+					'highlight'         => __( 'Highlight element', 'locala11y' ),
+					'close'             => __( 'Close', 'locala11y' ),
+					'rerun'             => __( 'Re-run', 'locala11y' ),
+					'guideLink'         => __( 'WCAG remediation guide ↗', 'locala11y' ),
+					'manualReviewTitle' => __( 'Items needing manual review', 'locala11y' ),
+					'honestNotice'      => __( 'Automated checks detect ~30–50% of WCAG criteria. Always pair with manual testing.', 'locala11y' ),
 				),
 			)
 		);
@@ -323,6 +336,16 @@ class LocalA11y_Admin {
 					<p id="locala11y-progress-text"></p>
 				</div>
 
+				<div id="locala11y-scan-warnings" class="notice notice-warning" hidden aria-live="polite"></div>
+
+				<div class="locala11y-custom-url-row">
+					<label for="locala11y-custom-url"><?php esc_html_e( 'Add a custom URL on this site (e.g., Shop, Checkout, Archive):', 'locala11y' ); ?></label>
+					<div class="locala11y-custom-url-inputs">
+						<input type="url" id="locala11y-custom-url" class="regular-text" placeholder="<?php echo esc_attr( home_url( '/shop/' ) ); ?>">
+						<button type="button" id="locala11y-add-url" class="button button-secondary"><?php esc_html_e( 'Add URL', 'locala11y' ); ?></button>
+					</div>
+				</div>
+
 				<div class="locala11y-targets-header">
 					<label>
 						<input type="checkbox" id="locala11y-select-all" checked>
@@ -340,7 +363,7 @@ class LocalA11y_Admin {
 				<div class="locala11y-card-head">
 					<h2><?php esc_html_e( 'Recent Scans', 'locala11y' ); ?></h2>
 					<?php if ( ! empty( $scans ) ) : ?>
-						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" onsubmit="return confirm('<?php echo esc_js( __( 'Delete all stored scan history and findings?', 'locala11y' ) ); ?>');">
+						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" data-locala11y-confirm="<?php echo esc_attr__( 'Delete all stored scan history and findings?', 'locala11y' ); ?>">
 							<input type="hidden" name="action" value="locala11y_clear_scans">
 							<?php wp_nonce_field( 'locala11y_clear_scans', 'locala11y_nonce' ); ?>
 							<button type="submit" class="button button-link-delete"><?php esc_html_e( 'Clear Scan History', 'locala11y' ); ?></button>
@@ -448,7 +471,7 @@ class LocalA11y_Admin {
 						<a href="<?php echo esc_url( $export_url ); ?>" class="button button-secondary">
 							<?php esc_html_e( 'Export CSV Report', 'locala11y' ); ?>
 						</a>
-						<button type="button" class="button" onclick="window.print()">
+						<button type="button" class="button locala11y-print-btn">
 							<?php esc_html_e( 'Print / Save PDF', 'locala11y' ); ?>
 						</button>
 					</div>
@@ -541,7 +564,14 @@ class LocalA11y_Admin {
 									</a>
 								</td>
 								<td>
-									<code class="locala11y-code"><?php echo esc_html( $f['selector'] ); ?></code>
+									<div class="locala11y-selector-row">
+										<code class="locala11y-code"><?php echo esc_html( $f['selector'] ); ?></code>
+										<?php if ( ! empty( $f['selector'] ) ) : ?>
+											<button type="button" class="button button-small locala11y-copy-btn" data-copy="<?php echo esc_attr( $f['selector'] ); ?>">
+												<?php esc_html_e( 'Copy selector', 'locala11y' ); ?>
+											</button>
+										<?php endif; ?>
+									</div>
 									<?php if ( ! empty( $f['html_snippet'] ) ) : ?>
 										<pre class="locala11y-snippet"><?php echo esc_html( $f['html_snippet'] ); ?></pre>
 									<?php endif; ?>
@@ -954,9 +984,13 @@ class LocalA11y_Admin {
 			exit;
 		}
 
+		// UTF-8 BOM ensures Excel opens European/French characters cleanly.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
+		fwrite( $output, "\xEF\xBB\xBF" );
+
 		fputcsv(
 			$output,
-			array( 'Severity', 'Type', 'Rule ID', 'WCAG Tags', 'Issue', 'Page Title', 'Page URL', 'CSS Selector', 'Status', 'Guide URL' )
+			array( 'Severity', 'Type', 'Rule ID', 'WCAG Tags', 'Issue', 'Failure Summary', 'Page Title', 'Page URL', 'CSS Selector', 'Status', 'Guide URL' )
 		);
 
 		foreach ( $findings as $f ) {
@@ -968,6 +1002,7 @@ class LocalA11y_Admin {
 					self::safe_csv_cell( $f['rule_id'] ),
 					self::safe_csv_cell( $f['wcag_tags'] ),
 					self::safe_csv_cell( $f['help_text'] ),
+					self::safe_csv_cell( $f['failure_summary'] ),
 					self::safe_csv_cell( $f['page_title'] ),
 					self::safe_csv_cell( $f['page_url'] ),
 					self::safe_csv_cell( $f['selector'] ),

@@ -21,6 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'LOCALA11Y_VERSION', '1.0.0' );
 define( 'LOCALA11Y_DB_VERSION', '1.0.0' );
+define( 'LOCALA11Y_AXE_VERSION', '4.14.1' );
 define( 'LOCALA11Y_PLUGIN_FILE', __FILE__ );
 define( 'LOCALA11Y_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'LOCALA11Y_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -57,6 +58,9 @@ register_activation_hook( __FILE__, 'locala11y_activate' );
  * @return void
  */
 function locala11y_init() {
+	if ( LOCALA11Y_DB_VERSION !== get_option( 'locala11y_db_version' ) ) {
+		LocalA11y_DB::install();
+	}
 	LocalA11y_Statement::init();
 	LocalA11y_REST::init();
 	LocalA11y_Admin::init();

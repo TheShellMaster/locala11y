@@ -106,6 +106,49 @@
 	transition: width 0.2s ease;
 }
 
+.locala11y-custom-url-row {
+	margin: 14px 0;
+	padding: 12px;
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+}
+
+.locala11y-custom-url-row label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 6px;
+}
+
+.locala11y-custom-url-inputs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+}
+
+.locala11y-selector-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 6px;
+}
+
+.locala11y-copy-btn {
+	flex-shrink: 0;
+}
+
+#locala11y-scan-warnings {
+	padding: 10px 14px;
+	margin: 12px 0;
+}
+
+#locala11y-scan-warnings ul {
+	margin: 6px 0 0 18px;
+	list-style: disc;
+}
+
 .locala11y-targets-header {
 	display: flex;
 	justify-content: space-between;

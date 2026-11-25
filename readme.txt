@@ -18,7 +18,7 @@ No external SaaS subscription, no cloud account, no third-party tracking, and **
 
 = Key Features =
 
-* **100% Local Browser Auditing (`axe-core`)**: Scans published pages and posts in Desktop (1280px) or Mobile (390px) viewports against WCAG 2.0, 2.1, and **WCAG 2.2 Level AA** rules using the bundled `axe-core` engine.
+* **100% Local Browser Auditing (`axe-core`)**: Scans published pages, posts, or any custom same-site URL (such as WooCommerce shop, checkout, or archive pages) in Desktop (1280px) or Mobile (390px) viewports against WCAG 2.0, 2.1, and **WCAG 2.2 Level AA** rules using the bundled `axe-core` engine.
 * **Admin-Bar Quick Page Audit**: Logged-in administrators can audit any front-end page in one click, inspect violations in an accessible side drawer, and highlight offending elements directly on the page. **Zero bytes are ever loaded for public visitors.**
 * **Findings Explorer & Remediation Tracking**: Filter issues by severity (`Critical`, `Serious`, `Moderate`, `Minor`) and status (`Open`, `Reviewed`, `Fixed`), inspect exact CSS selectors and HTML snippets, and follow official WCAG guidance links.
 * **EAA / WCAG 2.2 Accessibility Statement Generator**: Configure and publish a transparent Accessibility Statement in **English or French** using the `[locala11y_statement]` shortcode or one-click page publishing — optionally auto-listing open findings in your Known Limitations section.
@@ -37,11 +37,11 @@ Automated accessibility scanners typically detect 30% to 50% of WCAG criteria. *
 
 = Third-Party Code =
 
-This plugin bundles **axe-core 4.10.3** by Deque Systems, Inc., licensed under the **Mozilla Public License 2.0 (MPL-2.0)**, which is GPL-compatible.
+This plugin bundles **axe-core 4.14.1** by Deque Systems, Inc., licensed under the **Mozilla Public License 2.0 (MPL-2.0)**, which is GPL-compatible.
 
 * Bundled file: `assets/vendor/axe-core/axe.min.js`
 * License text: `licenses/axe-core-MPL-2.0.txt`
-* Human-readable source: https://github.com/dequelabs/axe-core/tree/v4.10.3 and https://cdn.jsdelivr.net/npm/axe-core@4.10.3/axe.js
+* Human-readable source: https://github.com/dequelabs/axe-core/tree/v4.14.1 and https://cdn.jsdelivr.net/npm/axe-core@4.14.1/axe.js
 
 == Installation ==
 
@@ -80,7 +80,7 @@ Deactivating the plugin keeps your data safe. Deleting the plugin completely rem
 
 = 1.0.0 =
 * Initial release.
-* Local browser-based WCAG 2.2 AA & EAA scanner powered by bundled axe-core 4.10.3.
+* Local browser-based WCAG 2.2 AA & EAA scanner powered by bundled axe-core 4.14.1.
 * Admin-bar quick page audit drawer with on-page element highlighting (admin-only).
 * Findings Explorer with status tracking, CSV export, and printable report view.
 * EAA / WCAG 2.2 Accessibility Statement generator (English & French) with `[locala11y_statement]` shortcode and one-click page publishing.

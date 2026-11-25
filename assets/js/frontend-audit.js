@@ -7,12 +7,25 @@
 
 	const cfg = window.localA11yFront;
 	let drawerEl = null;
+	let closeBtnEl = null;
+	let triggerEl = null;
 	let highlightedEl = null;
 
 	function clearHighlight() {
 		if (highlightedEl) {
 			highlightedEl.classList.remove('locala11y-highlight-outline');
 			highlightedEl = null;
+		}
+	}
+
+	function closeDrawer() {
+		if (!drawerEl) {
+			return;
+		}
+		clearHighlight();
+		drawerEl.hidden = true;
+		if (triggerEl && typeof triggerEl.focus === 'function') {
+			triggerEl.focus();
 		}
 	}
 
@@ -41,17 +54,14 @@
 		rerunBtn.textContent = cfg.i18n.rerun;
 		rerunBtn.addEventListener('click', runAudit);
 
-		const closeBtn = document.createElement('button');
-		closeBtn.type = 'button';
-		closeBtn.className = 'locala11y-drawer__btn locala11y-drawer__btn--close';
-		closeBtn.textContent = cfg.i18n.close;
-		closeBtn.addEventListener('click', function () {
-			clearHighlight();
-			drawerEl.hidden = true;
-		});
+		closeBtnEl = document.createElement('button');
+		closeBtnEl.type = 'button';
+		closeBtnEl.className = 'locala11y-drawer__btn locala11y-drawer__btn--close';
+		closeBtnEl.textContent = cfg.i18n.close;
+		closeBtnEl.addEventListener('click', closeDrawer);
 
 		actions.appendChild(rerunBtn);
-		actions.appendChild(closeBtn);
+		actions.appendChild(closeBtnEl);
 		header.appendChild(h2);
 		header.appendChild(actions);
 
@@ -61,6 +71,13 @@
 		drawerEl.appendChild(header);
 		drawerEl.appendChild(body);
 		document.body.appendChild(drawerEl);
+
+		document.addEventListener('keydown', function (e) {
+			if (e.key === 'Escape' && drawerEl && !drawerEl.hidden) {
+				closeDrawer();
+			}
+		});
+
 		return drawerEl;
 	}
 
@@ -78,12 +95,76 @@
 		}
 	}
 
+	function renderRuleNodeCard(rule, node) {
+		const card = document.createElement('div');
+		card.className = 'locala11y-drawer__item';
+
+		const impact = node.impact || rule.impact || 'moderate';
+		const badge = document.createElement('span');
+		badge.className = 'locala11y-drawer__impact locala11y-drawer__impact--' + impact;
+		badge.textContent = impact.toUpperCase();
+
+		const title = document.createElement('strong');
+		title.textContent = rule.help;
+
+		card.appendChild(badge);
+		card.appendChild(title);
+
+		if (node.failureSummary) {
+			const summaryEl = document.createElement('p');
+			summaryEl.className = 'locala11y-drawer__summary';
+			summaryEl.textContent = node.failureSummary;
+			card.appendChild(summaryEl);
+		}
+
+		const selector = Array.isArray(node.target) ? node.target[0] : '';
+		if (selector) {
+			const selCode = document.createElement('div');
+			selCode.className = 'locala11y-drawer__selector';
+			selCode.textContent = selector;
+			card.appendChild(selCode);
+		}
+
+		const cardActions = document.createElement('div');
+		cardActions.className = 'locala11y-drawer__card-actions';
+
+		if (selector) {
+			const btn = document.createElement('button');
+			btn.type = 'button';
+			btn.className = 'locala11y-drawer__btn';
+			btn.textContent = cfg.i18n.highlight;
+			btn.addEventListener('click', function () {
+				highlightSelector(selector);
+			});
+			cardActions.appendChild(btn);
+		}
+
+		if (rule.helpUrl) {
+			const guideLink = document.createElement('a');
+			guideLink.href = rule.helpUrl;
+			guideLink.target = '_blank';
+			guideLink.rel = 'noopener noreferrer';
+			guideLink.className = 'locala11y-drawer__link';
+			guideLink.textContent = cfg.i18n.guideLink || 'WCAG guide ↗';
+			cardActions.appendChild(guideLink);
+		}
+
+		if (cardActions.firstChild) {
+			card.appendChild(cardActions);
+		}
+
+		return card;
+	}
+
 	async function runAudit() {
 		const drawer = ensureDrawer();
 		const body = drawer.querySelector('.locala11y-drawer__body');
 		drawer.hidden = false;
 		clearHighlight();
 		body.textContent = cfg.i18n.running;
+		if (closeBtnEl) {
+			closeBtnEl.focus();
+		}
 
 		try {
 			const results = await window.axe.run(
@@ -94,7 +175,9 @@
 				}
 			);
 
-			body.innerHTML = '';
+			while (body.firstChild) {
+				body.removeChild(body.firstChild);
+			}
 
 			const notice = document.createElement('div');
 			notice.className = 'locala11y-drawer__notice';
@@ -104,58 +187,48 @@
 			const summary = document.createElement('p');
 			const vCount = results.violations.reduce(function (acc, r) { return acc + r.nodes.length; }, 0);
 			const iCount = results.incomplete.reduce(function (acc, r) { return acc + r.nodes.length; }, 0);
-			summary.innerHTML = '<strong>' + cfg.i18n.violations + ': ' + vCount + '</strong> · ' + cfg.i18n.needsReview + ': ' + iCount;
+
+			const strongCount = document.createElement('strong');
+			strongCount.textContent = cfg.i18n.violations + ': ' + vCount;
+			summary.appendChild(strongCount);
+			summary.appendChild(document.createTextNode(' · ' + cfg.i18n.needsReview + ': ' + iCount));
 			body.appendChild(summary);
 
 			if (!results.violations.length) {
 				const ok = document.createElement('p');
 				ok.textContent = cfg.i18n.noIssues;
 				body.appendChild(ok);
-				return;
+			} else {
+				results.violations.forEach(function (rule) {
+					rule.nodes.forEach(function (node) {
+						body.appendChild(renderRuleNodeCard(rule, node));
+					});
+				});
 			}
 
-			results.violations.forEach(function (rule) {
-				rule.nodes.forEach(function (node) {
-					const card = document.createElement('div');
-					card.className = 'locala11y-drawer__item';
+			if (results.incomplete.length) {
+				const details = document.createElement('details');
+				details.className = 'locala11y-drawer__details';
+				const sum = document.createElement('summary');
+				sum.textContent = (cfg.i18n.manualReviewTitle || cfg.i18n.needsReview) + ' (' + iCount + ')';
+				details.appendChild(sum);
 
-					const impact = node.impact || rule.impact || 'moderate';
-					const badge = document.createElement('span');
-					badge.className = 'locala11y-drawer__impact locala11y-drawer__impact--' + impact;
-					badge.textContent = impact.toUpperCase();
-
-					const title = document.createElement('strong');
-					title.textContent = rule.help;
-
-					const selector = Array.isArray(node.target) ? node.target[0] : '';
-					const selCode = document.createElement('div');
-					selCode.style.cssText = 'font-family:monospace;font-size:11px;margin:6px 0;word-break:break-all;color:#50575e;';
-					selCode.textContent = selector;
-
-					const btn = document.createElement('button');
-					btn.type = 'button';
-					btn.className = 'locala11y-drawer__btn';
-					btn.textContent = cfg.i18n.highlight;
-					btn.addEventListener('click', function () {
-						highlightSelector(selector);
+				results.incomplete.forEach(function (rule) {
+					rule.nodes.forEach(function (node) {
+						details.appendChild(renderRuleNodeCard(rule, node));
 					});
-
-					card.appendChild(badge);
-					card.appendChild(title);
-					card.appendChild(selCode);
-					card.appendChild(btn);
-					body.appendChild(card);
 				});
-			});
+				body.appendChild(details);
+			}
 		} catch (err) {
 			body.textContent = 'Audit error: ' + err.message;
 		}
 	}
 
 	document.addEventListener('DOMContentLoaded', function () {
-		const trigger = document.querySelector('#wp-admin-bar-locala11y-quick-audit a');
-		if (trigger) {
-			trigger.addEventListener('click', function (e) {
+		triggerEl = document.querySelector('#wp-admin-bar-locala11y-quick-audit a');
+		if (triggerEl) {
+			triggerEl.addEventListener('click', function (e) {
 				e.preventDefault();
 				runAudit();
 			});
